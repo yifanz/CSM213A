@@ -6,7 +6,7 @@ Yi-Fan Zhang
 yifanz@ucla.edu
 
 ## Project Proposal 
-### Driver level debugging support for PRU programming on the Beaglebone Black
+### Enhance debugging support for PRU programming on the Beaglebone Black
 The Sitara AM335x SoC on the Beaglebone Black development board features an on-chip programmable real-time unit (PRU) subsystem consisting of two 32-bit RISC cores.
 Key features include a deterministic RISC instruction set with single cycle access to I/O pins, access to all resources on the SoC and an interrupt controller for capturing system-wide events.
 Having a separate PRU subsystem allows for software emulation of peripheral hardware without taking time away from the main processor.
@@ -17,5 +17,5 @@ Despite these advantages, PRUs are often overlooked by application developers be
 #### Project Objectives
 
 1. Automate PRU and pinmux setup through a shell script that will handle the Linux device tree configuration.
-2. Enhance the prussdrv UIO diver to support single step and breakpoint debugging.
+2. Enhance the prussdrv UIO driver to support single step and breakpoint debugging.
 3. Write an example application to demonstrate how to access gpio, shared memory and the interrupt controller from the PRU.
