@@ -17,4 +17,4 @@ Despite these advantages, PRUs are often overlooked by application developers be
 #### Project Objectives
 
 1. Automate PRU and pinmux setup through a shell script that will handle the Linux device tree configuration.
-3. Write an example application to demonstrate how to access gpio, shared memory and the interrupt controller from the PRU. I plan to soft emulate the SWD serial protocol using the PRU.
+2. Write an example application to demonstrate how to access gpio, shared memory and the interrupt controller from the PRU. I plan to soft emulate the SWD serial protocol using the PRU.
