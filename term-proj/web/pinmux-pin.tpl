@@ -1,7 +1,8 @@
 <%
 name = pin['name']
 mode = pin['mode']
-pru_assignable = bool(filter(lambda x: 'pru' in str(x), pin['modes']))
+pru_assignable = bool(filter(lambda m: 'pru' in str(m), pin['modes']))
+pru_assigned = bool(mode != None and "pru" in pin['modes'][mode])
 slew = 'checked' if pin['slew'] else ''
 input = 'checked' if pin['input'] else ''
 pullup = 'checked' if pin['pullup'] else ''
@@ -17,6 +18,8 @@ row = list(reversed(row)) if reverse else row
 		fixed
 	%elif disabled:
 		disabled
+	%elif pru_assigned:
+		pru-assigned
 	%end
 	">
 		%if cell[0] == 'mode':

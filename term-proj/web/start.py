@@ -3,6 +3,7 @@ import re
 from pins import P8, P9
 import os
 import subprocess
+import time
 
 BASE_ADDR = 0x44e10800
 SLOTS_PATH = '/sys/devices/bone_capemgr.9/slots'
@@ -25,12 +26,14 @@ def read_pin_status():
 				pin = search_dict(P, \
 						lambda pin: pin['offset'] == offset)
 				if pin:
-					pin['mode'] = cfg & 0b0000111
+					mode = int(cfg & 0b0000111)
+					pin['mode'] = mode
 					pin['enable_pullupdown'] = bool(cfg & 0b0001000)
 					pin['pullup'] = bool(cfg & 0b0010000)
 					pin['input'] = bool(cfg & 0b0100000)
 					pin['slew'] = bool(cfg & 0b1000000)
 					pin['cfg'] = cfg
+
 	f.close()
 
 def pruss_enabled():
@@ -97,7 +100,7 @@ def route_pinmux_post():
 			input = form.getunicode(prefix + str(i) + "_input")
 			slew = form.getunicode(prefix + str(i) + "_slew")
 
-			if mode:
+			if mode != None:
 				bits = bits | int(mode)
 				if enable_pullupdown:
 					bits = bits | 0b0001000
@@ -109,9 +112,18 @@ def route_pinmux_post():
 					bits = bits | 0b1000000
 
 				offset = P[i]['offset']
-				pru_assignable = bool(filter(lambda m: "pru" in str(m), P[i]['modes']))
+				pru_assignable = bool(filter(lambda m: "pru" in str(m), \
+							P[i]['modes']))
 				if pru_assignable and offset != None and bits != P[i]['cfg']:
-					pins.append((offset, bits))
+					pin = {}
+					if P == P8:
+						pin['header'] = "P8"
+					else:
+						pin['header'] = "P9"
+					pin['pin_num'] = i
+					pin['offset'] = offset
+					pin['bits'] = bits
+					pins.append(pin)
 
 	if pins or pruss_enabled() != enable_pruss:
 		unload_slot(dts_name)
@@ -123,6 +135,7 @@ def route_pinmux_post():
 		full_dts_path = root_firmware_dir + dts_filename
 		f = open(full_dts_path, "w")
 		f.write(dts)
+		print dts
 		f.flush()
 		f.close()
 	
@@ -132,6 +145,8 @@ def route_pinmux_post():
 						 "0", "-@", full_dts_path])
 
 		load_slot(dts_name)
+
+		time.sleep(0.25)
 
 	redirect('/pru/pinmux')
 
