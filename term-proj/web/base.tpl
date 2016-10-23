@@ -16,7 +16,7 @@
 	td {
 		background-color: #f2f2f2;
 	}
-	td.pru-assigned {
+	td.pru-assigned, .pru-assigned td {
 		background-color: #26ca3a;
 	}
 	td.fixed {

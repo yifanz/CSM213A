@@ -1,12 +1,23 @@
 % rebase('base.tpl', title='PRU Pin Configuration')
-<form action="/pru/pinmux" method="post">
-<label>PRU Subsystem Enabled:
-	<input name="enable_pruss" type="checkbox"
+<form autocomplete="off" action="/pru/pinmux" method="post">
+<table>
+	<tr class="
 	%if pruss_enabled:
-		checked
+		pru-assigned
 	%end
-	>
-</label>
+	">
+		<td><label for="enable_pruss">PRU Subsystem Enabled:</label></td>
+		<td>
+			<input id="enable_pruss" name="enable_pruss" type="checkbox"
+			%if pruss_enabled:
+				class="pru_assigned"
+				checked
+			%end
+			>
+		</td>
+		<td><input type="submit" value="Apply"></td>
+	</tr>
+</table>
 <table>
 <caption>P8</caption>
 <%for i in range(1, 46, 2):
@@ -22,5 +33,4 @@
 	</tr>
 %end
 </table>
-<input type="submit" value="Submit">
 </form>
