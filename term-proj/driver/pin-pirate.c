@@ -27,11 +27,10 @@ MODULE_VERSION("0.1");				// The version of the module
 
 static void *pinmux_io_base;
 
-static int    majorNumber;                  ///< Stores the device number -- determined automatically
-static char   message[256] = {0};           ///< Memory for the string that is passed from userspace
-static short  size_of_message;              ///< Used to remember the size of the string stored
-static struct class*  pinpirate_class  = NULL; ///< The device-driver class struct pointer
-static struct device* pinpirate_dev = NULL; ///< The device-driver device struct pointer
+static int    majorNumber;                  // Stores the device number -- determined automatically
+static char   message[256] = {0};           // Memory for the string that is passed from userspace
+static struct class*  pinpirate_class  = NULL; // The device-driver class struct pointer
+static struct device* pinpirate_dev = NULL; // The device-driver device struct pointer
 
 // The prototype functions for the character driver -- must come before the struct definition
 static int     dev_open(struct inode *, struct file *);
@@ -128,6 +127,7 @@ static int dev_open(struct inode *inodep, struct file *filep){
  */
 static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *offset){
 /*
+	printk(KERN_INFO DEVICE_NAME": offset: 0x%llu\n", *offset);
 	int error_count = 0;
 	// copy_to_user has the format ( * to, *from, size) and returns 0 on success
 	error_count = copy_to_user(buffer, message, size_of_message);
@@ -153,12 +153,34 @@ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *of
  *  @param offset The offset if required
  */
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
+/*
 	writeb(0x06, pinmux_io_base + 0x34);
+*/
 
-	sprintf(message, "%s(%d letters)", buffer, len);   // appending received string with its length
-	size_of_message = strlen(message);                 // store the length of the stored message
-	printk(KERN_INFO DEVICE_NAME": Received %d characters from the user\n", len);
+	int i;
+	long register_offset = 0;
+
+	for (i = 0; i < len; i++)
+	{
+		char c = buffer[i];
+		if (c == ' ' || i == len - 1 || i == sizeof message - 1)
+		{
+			message[i] = '\0';
+			break;
+		}
+
+		message[i] = c; 
+    }
+
+	if (kstrtol(message, 0, &register_offset))
+		goto ERROR;
+
+	printk(KERN_INFO DEVICE_NAME": Register offset: 0x%lx \n", register_offset);
+
 	return len;
+
+ERROR:
+	return 0;
 }
 
 /** @brief The device release function that is called whenever the device is closed/released by
