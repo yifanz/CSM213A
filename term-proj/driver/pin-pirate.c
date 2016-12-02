@@ -144,25 +144,14 @@ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *of
 	return 0;
 }
 
-/** @brief This function is called whenever the device is being written to from user space i.e.
- *  data is sent to the device from the user. The data is copied to the message[] array in this
- *  LKM using the sprintf() function along with the length of the string.
- *  @param filep A pointer to a file object
- *  @param buffer The buffer to that contains the string to write to the device
- *  @param len The length of the array of data that is being passed in the const char buffer
- *  @param offset The offset if required
- */
-static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
-/*
-	writeb(0x06, pinmux_io_base + 0x34);
-*/
-
+int read_message(const char *buffer, size_t len, unsigned long* val)
+{
 	int i;
-	long register_offset = 0;
 
 	for (i = 0; i < len; i++)
 	{
 		char c = buffer[i];
+
 		if (c == ' ' || i == len - 1 || i == sizeof message - 1)
 		{
 			message[i] = '\0';
@@ -172,15 +161,54 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 		message[i] = c; 
     }
 
-	if (kstrtol(message, 0, &register_offset))
+	if (kstrtol(message, 0, val))
 		goto ERROR;
 
-	printk(KERN_INFO DEVICE_NAME": Register offset: 0x%lx \n", register_offset);
+	return i;
+ERROR:
+	return -1;
+}
+
+/** @brief This function is called whenever the device is being written to from user space i.e.
+ *  data is sent to the device from the user. The data is copied to the message[] array in this
+ *  LKM using the sprintf() function along with the length of the string.
+ *  @param filep A pointer to a file object
+ *  @param buffer The buffer to that contains the string to write to the device
+ *  @param len The length of the array of data that is being passed in the const char buffer
+ *  @param offset The offset if required
+ */
+static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset){
+	unsigned long register_offset = 0;
+	unsigned long register_value = 0;
+	int i;
+
+	i = read_message(buffer, len, &register_offset);
+
+	if (i == -1)
+		goto ERROR_INPUT;
+
+	i++;
+	if (i >= len || read_message(buffer+i, len-i, &register_value) == -1)
+		goto ERROR_INPUT;
+
+	if (register_offset >= PINMUX_IO_SIZE) {
+		printk(KERN_ERR DEVICE_NAME": offset 0x%lx out of bounds\n", register_offset);
+		return len;
+	}
+
+	if (register_value >= 128) {
+		printk(KERN_ERR DEVICE_NAME": value 0x%lx out of bounds\n", register_value);
+		return len;
+	}
+
+	printk(KERN_INFO DEVICE_NAME": Register offset: 0x%lx value: 0x%lx\n", register_offset, register_value);
+	writeb(register_value, pinmux_io_base + register_offset);
 
 	return len;
 
-ERROR:
-	return 0;
+ERROR_INPUT:
+	printk(KERN_ERR DEVICE_NAME": invalid input\n");
+	return len;
 }
 
 /** @brief The device release function that is called whenever the device is closed/released by
