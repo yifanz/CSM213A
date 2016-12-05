@@ -25,6 +25,7 @@ if [ "$1" = "unload" ]; then
 		if cat $CAPEMGR_SLOTS | grep --quiet $DTS_NAME ; then
 			SLOT_UNLOAD="sudo sh -c 'echo -$(($(cat $CAPEMGR_SLOTS | grep $DTS_NAME | cut -d':' -f1))) > $CAPEMGR_SLOTS'"
 			eval $SLOT_UNLOAD
+			sleep 1
 		fi
 	fi
 else
@@ -37,6 +38,7 @@ else
 		if ! cat $CAPEMGR_SLOTS | grep --quiet $DTS_NAME ; then
 			SLOT_LOAD="sudo sh -c 'echo PRU-ACTIVATE > $CAPEMGR_SLOTS'"
 			eval $SLOT_LOAD
+			sleep 1
 		fi
 	fi
 fi

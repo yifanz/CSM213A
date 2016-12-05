@@ -14,7 +14,12 @@
 	</style>
 </head>
 <body>
-	{{!base}}
+	<div class="menu-bar">
+		<button id="compile" class="button" pru-num="{{pru_num}}">Compile</button>
+	</div>
+	<div class="body-container">
+		{{!base}}
+	</div>
 	<script src="static/jquery.js" type="text/javascript"></script>
 	<script src="static/ace/ace.js" type="text/javascript"></script>
 	<script src="static/editor.js" type="text/javascript"></script>

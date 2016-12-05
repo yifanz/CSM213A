@@ -1,10 +1,17 @@
-% rebase('base.tpl', title='PRU Editor')
-<div id="editor-container">
-	<div id="editor">function foo(items) {
+% rebase('base.tpl', title='PRU Editor', pru_num=pru_num)
+
+<div class="editor-container">
+	<div id="editor" class="editor">function foo(items) {
+		var x = "PRU num {{pru_num}}";
+	</div>
+</div>
+
+<div class="editor-container asm-editor-container">
+	<div id="asm-editor" class="editor">function foo(items) {
 		var x = "PRU num {{pru_num}}";
 	</div>
 </div>
 
 <div id="console-container">
-	<button id="compile" class="button" pru-num="{{pru_num}}">Compile</button>
+	<pre id="console"></pre>
 </div>

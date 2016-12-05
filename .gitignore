@@ -126,3 +126,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+#########
+# Project
+#########
+
+_tmp/
