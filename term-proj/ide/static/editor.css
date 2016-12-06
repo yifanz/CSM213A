@@ -31,13 +31,14 @@ body {
     background-color: #376698;
     border: none;
     color: white;
-    padding: 4px 22px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
     font-size: 12px;
     margin: 4px 2px;
     cursor: pointer;
+	width: 88px;
+	height: 22px;
 }
 
 .button:hover {
@@ -84,7 +85,6 @@ body {
 
 #console {
 	height: 100%;
-	width: 100%;
 	overflow: scroll;
 	margin: 0;
 	padding: 0 0 0 11px;

@@ -14,14 +14,17 @@ $(document).ready(function() {
 			console.log("compile");
 		});
 	});
-	
-	window.setInterval(function() {
+
+	function update_terminal() {
 		var pru_num = $('#compile').attr('pru-num');
 		$.get("pru/" + pru_num + "/out", function(data) {
 			if (data) {
 				$("#console").append(data);
 				console.log(data);
 			}
-		});
-	}, 750);
+			window.setTimeout(update_terminal, 100);
+		}).fail(function() { window.setTimeout(update_terminal, 5000); });
+	}
+
+	window.setTimeout(update_terminal, 100);
 });

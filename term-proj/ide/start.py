@@ -82,4 +82,4 @@ compile_processor_0.start()
 compile_processor_1 = Process(target=compile_process, args=(1, pru_1_out))
 compile_processor_1.start()
 
-run(host='192.168.7.2', port=8081)
+run(host='192.168.7.2', port=8081, quiet=True)
