@@ -46,16 +46,11 @@ int main(int argc, const char *argv[]) {
 	// Wait for the PRU to let us know it's done
 	prussdrv_pru_wait_event(PRU_EVTOUT_0);
 
-/*
 	uint32_t* p = (uint32_t*) dataram;
 	for (int i = 0; i < 3; i++) {
-		printf("%d: %d cycles, %f ms\n",
-				*(p+1),
-				*p,
-				(float) *p * 5 / (1000 * 1000));
+		printf("%d %d\n", *(p+1), *p);
 		p += 2;
 	}
-*/
 
 	printf("All done\n");
 

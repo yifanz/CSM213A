@@ -17,6 +17,7 @@
 	<div class="menu-bar">
 		<button id="compile" style="float: left; margin-left: 3px;"class="button" pru-num="{{pru_num}}">Compile</button>
 		<button id="run" style="float: left;"class="button" pru-num="{{pru_num}}">Run</button>
+		<button id="stop" style="float: left;"class="button" pru-num="{{pru_num}}">Stop</button>
 		<button id="tail" style="float: right; margin-right: 3px;" class="button" pru-num="{{pru_num}}">Tail</button>
 		<button id="clear" style="float: right;" class="button" pru-num="{{pru_num}}">Clear</button>
 	</div>
