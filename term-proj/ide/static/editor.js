@@ -7,6 +7,11 @@ $(document).ready(function() {
 	asm_editor.setTheme("ace/theme/dawn");
 	asm_editor.session.setMode("ace/mode/assembly_pru");
 
+	$('#compile').click(function() {
+		var asm_src = compile(editor.getValue());
+		asm_editor.setValue(asm_src);
+	});
+
 	$('#run').click(function() {
 		var pru_num = $('#run').attr('pru-num');
 		var src = asm_editor.getValue();

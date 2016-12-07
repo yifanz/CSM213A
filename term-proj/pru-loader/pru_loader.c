@@ -38,21 +38,35 @@ int main(int argc, const char *argv[]) {
 		printf("pru mem map failed\n");
 		return 1;
 	}
-	memset(dataram, 0, 100);
+	memset(dataram, 0, 0x2000);
 
 	printf("Executing program and waiting for termination\n");
 	prussdrv_exec_program(which_pru, argv[1]);
 
-	// Wait for the PRU to let us know it's done
-	prussdrv_pru_wait_event(PRU_EVTOUT_0);
+	// Wait for interrupt from PRU
+	//prussdrv_pru_wait_event(PRU_EVTOUT_0);
+	
+	while(1) {
+		uint32_t* p = (uint32_t*) dataram;
 
-	uint32_t* p = (uint32_t*) dataram;
-	for (int i = 0; i < 3; i++) {
-		printf("%d %d\n", *(p+1), *p);
-		p += 2;
+		// status code = 1 is printf
+		if (*p == 1) {
+			uint32_t num_args = *(++p);
+			uint32_t format_str_index = *(++p);
+			printf("test %d %d\n", num_args, format_str_index);
+			//printf("%s", argv[3+format_str_index]);
+			//for (int i = 0; i < num_args; i++) {
+			//	printf(" %d", *(++p));
+			//}
+			//printf("\n");
+			p = (uint32_t*) dataram;
+			*p = 0;
+		} else if (*p == 2) {
+			// terminate
+			printf("Terminate\n");
+			break;
+		}
 	}
-
-	printf("All done\n");
 
 	prussdrv_pru_disable(which_pru);
 	prussdrv_exit();
