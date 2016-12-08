@@ -49,16 +49,14 @@ int main(int argc, const char *argv[]) {
 	while(1) {
 		uint32_t* p = (uint32_t*) dataram;
 
-		// status code = 1 is printf
+		// status code = 1 is print
 		if (*p == 1) {
 			uint32_t num_args = *(++p);
-			uint32_t format_str_index = *(++p);
-			printf("test %d %d\n", num_args, format_str_index);
-			//printf("%s", argv[3+format_str_index]);
-			//for (int i = 0; i < num_args; i++) {
-			//	printf(" %d", *(++p));
-			//}
-			//printf("\n");
+			for (int i = 0; i < num_args; i++) {
+				uint32_t arg = *(++p);
+				printf(" %d", arg);
+			}
+			printf("\n");
 			p = (uint32_t*) dataram;
 			*p = 0;
 		} else if (*p == 2) {

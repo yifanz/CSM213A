@@ -27,32 +27,32 @@ var code_boilerplate_end =
 "sbbo r2, r0, r0, 4\n" +
 "halt\n\n";
 
-var code_printf =
-"PRINTF:\n" +
+var code_print =
+"PRINT:\n" +
 "sub r1, r1, 4\n" +
 "// num args in r2\n" +
 "lbbo r2, r1, 0, 4\n" +
 "// write offset\n" +
 "ldi r4, 0\n" +
-"// printf status code = 1\n" +
+"// print status code = 1\n" +
 "ldi r3, 1\n" +
 "sbbo r3, r4, 0, 4\n" +
 "add r4, r4, 4\n" +
 "sbbo r2, r4, 0, 4\n" +
 "add r4, r4, 4\n" +
-"PRINTF_LOOP:\n" +
+"PRINT_LOOP:\n" +
 "sub r1, r1, 4\n" +
 "lbbo r3, r1, 0, 4\n" +
 "sbbo r3, r4, 0, 4\n" +
 "add r4, r4, 4\n" +
 "sub r2, r2, 1\n" +
-"qbne PRINTF_LOOP, r2, 0\n" +
-"PRINTF_WAIT:\n" +
+"qbne PRINT_LOOP, r2, 0\n" +
+"PRINT_WAIT:\n" +
 "lbbo r2, r0, 0, 4\n" +
-"qbne PRINTF_WAIT, r2, 0\n" +
+"qbne PRINT_WAIT, r2, 0\n" +
 "ret\n";
 
-/* Example call to printf
+/* Example call to print
 
 ldi r5, 321
 sbbo r5, r1, 0, 4
@@ -60,7 +60,7 @@ add r1, r1, 4
 ldi r5, 1
 sbbo r5, r1, 0, 4
 add r1, r1, 4
-call PRINTF
+call PRINT
 
 */
 
@@ -91,7 +91,7 @@ function compile(src) {
 	asm_src += "\n// END\n\n";
 
 	asm_src += code_boilerplate_end;	
-	asm_src += code_printf;
+	asm_src += code_print;
 
 	window.asm_out_buf = "";
 	return asm_src;

@@ -1,9 +1,9 @@
 <pre id="grammar" style="display: none;">
 {
 	var reg_var_map = {};
-	var base_tmp_reg = 16;
+	var base_tmp_reg = 18;
 	var tmp_reg = base_tmp_reg;
-	var base_free_reg = 2;
+	var base_free_reg = 5;
 	var free_reg = base_free_reg;
 	var loop_cnt = 0;
 	
@@ -37,13 +37,13 @@
 
 	function assign_tmp_reg() {
 		var num = tmp_reg++;
-		if (num > 28) throw { message: "out of tmp registers" };
+		if (num > 29) throw { message: "out of tmp registers" };
 		return "r" + num;
 	}
 
 	function assign_tmp_reg_imm() {
 		var num = tmp_reg;
-		if (num > 28) throw { message: "out of tmp registers" };
+		if (num > 29) throw { message: "out of tmp registers" };
 		return "r" + num;
 	}
 
@@ -83,9 +83,10 @@ Statement
 	= _ Assignment _ ";" _
 	/ _ Loop _
 	/ _ If _
+	/ _ Print _ ";" _
 
 Assignment
-	= _ lhs:(Pin / Identifier) _ "=" _ rhs:Expression {
+	= _ lhs:(Pin / Tick / Identifier) _ "=" _ rhs:Expression {
 		if (lhs.type === 'pin') {
 			if (rhs.type === 'int') {
 				var pin_info = get_pin_info(lhs.value);
@@ -100,6 +101,18 @@ Assignment
 			} else {
 				throw { message: "pin must be set with an integer literal" };
 			}
+		} else if (lhs.type === 'tick') {
+			var treg = assign_tmp_reg();
+			asm_out("ldi " + treg + ", 0x22000");
+			if (rhs.type === 'int') {
+				var treg2 = assign_tmp_reg();
+				asm_out("ldi " + treg2 + ", " + rhs.value);
+				asm_out("sbbo " + treg2 + ", " + treg + ", 0xC, 4");
+				tmp_reg--;
+			} else {
+				asm_out("sbbo " + rhs.value + ", " + treg + ", 0xC, 4");
+			}
+			tmp_reg--;
 		} else {
 			if (rhs.type !== 'int') {
 				asm_out("mov " + lhs.value + ", " + rhs.value);
@@ -109,6 +122,36 @@ Assignment
 		}
 		reset_tmp_regs();
 		return null;
+	}
+
+Print
+	= "print" _ "(" _ head:Expression tail:(_ "," _ Expression)* _ ")" {
+		var treg = assign_tmp_reg_imm();
+		for (var i = tail.length - 1; i >= 0; i--) {
+			var arg = tail[i][3];
+			if (arg.type === 'int') {
+				asm_out("ldi " + treg + ", " + arg.value);
+				asm_out("sbbo " + treg + ", r1, 0, 4");
+			} else {
+				asm_out("sbbo " + arg.value + ", r1, 0, 4");
+			}
+			asm_out("add r1, r1, 4");
+		}
+
+		arg = head;
+		if (arg.type === 'int') {
+			asm_out("ldi " + treg + ", " + arg.value);
+			asm_out("sbbo " + treg + ", r1, 0, 4");
+		} else {
+			asm_out("sbbo " + arg.value + ", r1, 0, 4");
+		}
+		asm_out("add r1, r1, 4");
+
+		var argc = 1 + tail.length;
+		asm_out("ldi " + treg + ", " + argc);
+		asm_out("sbbo " + treg + ", r1, 0, 4");
+		asm_out("add r1, r1, 4");
+		asm_out("call PRINT");
 	}
 
 Loop
@@ -258,10 +301,25 @@ Factor
 		return expr;
 	}
 	/ Integer
+	/ Tick {
+		var treg = assign_tmp_reg();
+		asm_out("ldi " + treg + ", 0x22000");
+		asm_out("lbbo " + treg + ", " + treg + ", 0xC, 4"); 
+		return {
+			type: 'reg',
+			value: treg
+		}
+	}
 	/ Identifier
 
 Integer "integer"
-	= [0-9]+ { 
+	= "0x" [0-9a-fA-F]+ {
+		return {
+			type: 'int',
+			value: parseInt(text(), 16)
+		};
+	}
+	/ [0-9]+ { 
 		return {
 			type: "int",
 			value: parseInt(text(), 10)
@@ -273,6 +331,13 @@ Pin
 		return {
 			type: 'pin',
 			value: text()
+		}
+	}
+
+Tick
+	= "tick" {
+		return {
+			type: 'tick'
 		}
 	}
 
