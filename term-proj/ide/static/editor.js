@@ -2,7 +2,7 @@ $(document).ready(function() {
 	var editor = ace.edit("editor");
 	editor.$blockScrolling = Infinity;
 	editor.setTheme("ace/theme/solarized_light");
-	editor.session.setMode("ace/mode/assembly_pru");
+	editor.session.setMode("ace/mode/javascript");
 
 	var asm_editor = ace.edit("asm-editor");
 	asm_editor.$blockScrolling = Infinity;

@@ -145,10 +145,10 @@ CondExpression
 			value: label
 		};
 	}
-	/ lhs:Expression _ op:(">" / "<" / ">=" / "<=" / "==") _ rhs:Expression {
+	/ lhs:Expression _ op:(">=" / "<=" / "==" / ">" / "<") _ rhs:Expression {
 		var opcode;
 		if (op == ">") opcode = "qble ";
-		else if (op == "<") opcode = "qbge";
+		else if (op == "<") opcode = "qbge ";
 		else if (op == ">=") opcode = "qblt ";
 		else if (op == "<=") opcode = "qbgt ";
 		else if (op == "==") opcode = "qbne ";
