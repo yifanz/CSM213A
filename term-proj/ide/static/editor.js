@@ -21,6 +21,7 @@ $(document).ready(function() {
 		} catch (e) {
 			terminal.append("Compile Error: " + e.message + "\n");
 		}
+		$('#tail').click();
 	});
 
 	$('#run').click(function() {
@@ -43,6 +44,12 @@ $(document).ready(function() {
 
 	$('#clear').click(function() {
 		$('#console').text("");
+	});
+
+	$('#tail').click(function() {
+		var terminal = $("#console");
+		var height = terminal[0].scrollHeight;
+		terminal.scrollTop(height);
 	});
 
 	function update_terminal() {
