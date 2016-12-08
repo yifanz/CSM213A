@@ -1,15 +1,26 @@
 $(document).ready(function() {
 	var editor = ace.edit("editor");
+	editor.$blockScrolling = Infinity;
 	editor.setTheme("ace/theme/solarized_light");
 	editor.session.setMode("ace/mode/assembly_pru");
 
 	var asm_editor = ace.edit("asm-editor");
+	asm_editor.$blockScrolling = Infinity;
 	asm_editor.setTheme("ace/theme/dawn");
 	asm_editor.session.setMode("ace/mode/assembly_pru");
 
+	compiler_init();
+
 	$('#compile').click(function() {
-		var asm_src = compile(editor.getValue());
-		asm_editor.setValue(asm_src);
+		var terminal = $("#console");
+		terminal.append("Compiling...\n");
+		try {
+			var asm_src = compile(editor.getValue());
+			asm_editor.setValue(asm_src, -1);
+			terminal.append("Compile Done\n");
+		} catch (e) {
+			terminal.append("Compile Error: " + e.message + "\n");
+		}
 	});
 
 	$('#run').click(function() {
@@ -17,6 +28,8 @@ $(document).ready(function() {
 		var src = asm_editor.getValue();
 		$.post("pru/" + pru_num + "/run", { "src": src }, function(data) {
 			console.log("run");
+			var terminal = $("#console");
+			terminal.append("Running...\n");
 		});
 	});
 
@@ -26,6 +39,10 @@ $(document).ready(function() {
 			url: "pru/" + pru_num + "/stop", 
 			type: "PUT"
 		});
+	});
+
+	$('#clear').click(function() {
+		$('#console').text("");
 	});
 
 	function update_terminal() {

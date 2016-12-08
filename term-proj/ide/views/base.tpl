@@ -24,8 +24,10 @@
 	<div class="body-container">
 		{{!base}}
 	</div>
+	% include('grammar.tpl')
 	<script src="static/jquery.js" type="text/javascript"></script>
 	<script src="static/ace/ace.js" type="text/javascript"></script>
+	<script src="static/peg.js" type="text/javascript"></script>
 	<script src="static/compiler.js" type="text/javascript"></script>
 	<script src="static/editor.js" type="text/javascript"></script>
 </body>

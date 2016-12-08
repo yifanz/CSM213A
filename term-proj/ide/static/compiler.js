@@ -64,8 +64,24 @@ call PRINTF
 
 */
 
+var parser;
+
+function compiler_init() {
+	parser = peg.generate($("#grammar").text());	
+}
+
 function compile(src) {
 	var asm_src = code_boilerplate_begin;
+
+	asm_src += "// START\n\n";
+
+	parser.parse(src);
+	console.log(window.asm_out_buf);
+	
+	asm_src += window.asm_out_buf;
+	window.asm_out_buf = "";
+
+	asm_src += "\n// END\n\n";
 
 	asm_src += code_boilerplate_end;	
 	asm_src += code_printf;
