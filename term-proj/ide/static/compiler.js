@@ -71,20 +71,28 @@ function compiler_init() {
 }
 
 function compile(src) {
-	var asm_src = code_boilerplate_begin;
-
-	asm_src += "// START\n\n";
+	var asm_src = "";
 
 	parser.parse(src);
-	console.log(window.asm_out_buf);
-	
-	asm_src += window.asm_out_buf;
-	window.asm_out_buf = "";
 
+	var pin_configs = "";
+	for (var key in window.pin_settings) {
+		if (!window.pin_settings.hasOwnProperty(key)) continue;
+
+		var pin_conf = window.pin_settings[key];
+		pin_configs += "//" + pin_conf.conf + "\n"
+	}	
+
+	asm_src += pin_configs
+	asm_src += code_boilerplate_begin;
+
+	asm_src += "// START\n\n";
+	asm_src += window.asm_out_buf;
 	asm_src += "\n// END\n\n";
 
 	asm_src += code_boilerplate_end;	
 	asm_src += code_printf;
 
+	window.asm_out_buf = "";
 	return asm_src;
 }

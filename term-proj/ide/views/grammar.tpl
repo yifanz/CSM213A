@@ -6,8 +6,18 @@
 	var base_free_reg = 2;
 	var free_reg = base_free_reg;
 	var loop_cnt = 0;
+	
+	var pin_map = {
+		"P8_11": { reg: 30, bit: 15, offset: 0x34, mode: 0x06 },
+		"P8_16": { reg: 31, bit: 14, offset: 0x38, mode: 0x06 },
+	};
+	var pin_enable_pull_bit = (1 << 3);
+	var pin_pullup_bit = (1 << 4);
+	var pin_input_bit = (1 << 5);
+	var pin_settings = {};
 
 	window.asm_out_buf = "";
+	window.pin_settings = pin_settings;
 
 	function asm_out(str) {
 		window.asm_out_buf += str + "\n";
@@ -40,6 +50,30 @@
 	function reset_tmp_regs() {
 		tmp_reg = base_tmp_reg;
 	}
+
+	function get_pin_info(pin) {
+		var pin_info = pin_map[pin];
+		if (!pin_info) throw { message: "invalid pin " + pin};
+		return pin_info;
+	}
+
+	function assign_pin(pin, input) {
+		var pin_conf = pin_settings[pin];
+		if (pin_conf && pin_conf.input !== input) {
+			throw { message: "" + pin + " cannot be used for input and output simultaneously" };	
+		}
+		if (pin_conf && pin_conf.input === input) return;
+
+		var pin_info = pin_map[pin];
+		if (!pin_info) throw { message: "" + pin + " does not exist" };
+
+		var conf = "0x" + Number(pin_info.offset).toString(16) + " 0x" + Number(pin_info.mode).toString(16);
+		if (input) {
+			conf = "0x" + Number(pin_info.offset).toString(16) + " 0x" + Number(pin_info.mode | pin_enable_pull_bit | pin_input_bit).toString(16);
+		}
+
+		pin_settings[pin] = { input: input, conf: conf };	
+	}
 }
 
 Root
@@ -51,11 +85,27 @@ Statement
 	/ _ If _
 
 Assignment
-	= _ lhs:Identifier _ "=" _ rhs:Expression {
-		if (rhs.type !== 'int') {
-			asm_out("mov " + lhs.value + ", " + rhs.value);
+	= _ lhs:(Pin / Identifier) _ "=" _ rhs:Expression {
+		if (lhs.type === 'pin') {
+			if (rhs.type === 'int') {
+				var pin_info = get_pin_info(lhs.value);
+				var preg = "r" + pin_info.reg;
+				var pbit = pin_info.bit;
+				if (rhs.value === 0) {
+					asm_out("clr " + preg + ", " + preg + ", " + pbit);
+				} else {
+					asm_out("set " + preg + ", " + preg + ", " + pbit);
+				}
+				assign_pin(lhs.value, false);
+			} else {
+				throw { message: "pin must be set with an integer literal" };
+			}
 		} else {
-			asm_out("ldi " + lhs.value + ", " + rhs.value);
+			if (rhs.type !== 'int') {
+				asm_out("mov " + lhs.value + ", " + rhs.value);
+			} else {
+				asm_out("ldi " + lhs.value + ", " + rhs.value);
+			}
 		}
 		reset_tmp_regs();
 		return null;
@@ -73,7 +123,29 @@ If
 	}
 
 CondExpression
-	= lhs:Expression _ op:(">" / "<" / ">=" / "<=" / "==") _ rhs:Expression {
+	= not:("!"?) _ pin:Pin {
+		var opcode = "qbbc ";
+		if (not === "!") opcode = "qbbs ";
+		
+		var label = "COND_" + loop_cnt++;
+		var label_end = label + "_END";
+
+		asm_out(label + ":");
+
+		var pin_info = get_pin_info(pin.value);
+		var preg = "r" + pin_info.reg;
+		var pbit = pin_info.bit;
+
+		asm_out(opcode + label_end + ", " + preg + ", " + pbit);
+
+		assign_pin(pin.value, true);
+
+		return {
+			type: 'label',
+			value: label
+		};
+	}
+	/ lhs:Expression _ op:(">" / "<" / ">=" / "<=" / "==") _ rhs:Expression {
 		var opcode;
 		if (op == ">") opcode = "qble ";
 		else if (op == "<") opcode = "qbge";
@@ -194,6 +266,14 @@ Integer "integer"
 			type: "int",
 			value: parseInt(text(), 10)
 		};
+	}
+
+Pin
+	= "P" header:("8" / "9") "_" num:([1-9][0-9]*) {
+		return {
+			type: 'pin',
+			value: text()
+		}
 	}
 
 Identifier
