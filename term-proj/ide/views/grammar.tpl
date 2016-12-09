@@ -76,6 +76,7 @@
 	}
 }
 
+
 Root
 	= Statement*
 
@@ -397,5 +398,11 @@ Identifier
 	}
 
 _ "whitespace"
-	= [ \t\n\r]*
+	= ([ \t\n\r] / Comments / Comment)*
+
+Comments
+	= "/*" (!"*/" .)* "*/"
+
+Comment 
+	= "//" (!([\n\r]) .)* 
 </pre>
