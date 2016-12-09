@@ -15,14 +15,17 @@ yifanz@ucla.edu
 
 ## Project Proposal 
 ### Cyclops - PL + Compiler + IDE for making PRUs easier to use
+
+![alt text](https://github.com/yifanz/CSM213A/raw/master/images/ide_screenshot.png "ide")
+
 The Sitara AM335x SoC on the Beaglebone Black development board features an on-chip programmable real-time unit (PRU) subsystem consisting of two 32-bit RISC cores.
 Key features include a deterministic RISC instruction set with single cycle access to I/O pins, access to all resources on the SoC and an interrupt controller for capturing system-wide events.
 Having a separate PRU subsystem allows for software emulation of peripheral hardware without taking time away from the main processor.
 Moreover, the general purpose programmability of the PRUs affords more fexibility compared to custom ASICs without the increased board space, materials and development cost of adding an FPGA.
 
-Despite these advantages, PRUs are often overlooked by application developers because of impediments they face during development. For instance, the PRUs are not enabled by default which requires developers to learn how to configure them through the Linux device tree subsystem before any further development can occur. Once configured, developers then need to learn the low level bits of the PRU and re-implement all the common functions typically provided by an RTOS. Furthermore, there isn't a unified, working and documented set of tutorial applications that utilizes all of the common features of the PRU (I/O, shared memory, interrupts).
+Despite these advantages, PRUs are often overlooked by application developers because of impediments they face during development. For instance, the PRUs are not enabled by default which requires developers to learn how to configure them through the Linux device tree subsystem before any further development can occur. Once configured, developers then need to learn the low level bits of the PRU and implement boilerplate logic for loading program binaries and communication with the PRU. Furthermore, the only languages supported by TI are C/C++ and the PRU assembly language. In either case, all user interaction is performed on the commandline.
 
-It would be convenient to have a [mbed](https://developer.mbed.org) style development environment along with useful library functions for the PRU. The aim of this project is to make PRU programming easier by adding automated configuration for device tree setup, creating a tool and library for the PRU that mimics that of mbed and providing tutorial applications of PRU usage. This will be a deep dive into the details of how common mbed functions are implemented and translating them to work on PRU hardware.
+It would be convenient to have a [mbed](https://developer.mbed.org) style development environment along with a high level language for experimenting on the PRU. The aim of this project is to make PRU programming easier by adding automated configuration for device tree setup, creating a high level programming language for the PRU and provide an IDE which hides all the boilerplate and configuration. This will be a deep dive on language and compiler implementation for the PRU hardware as well as a bit of Linux kernel module development.
 
 #### Project Objectives
 
@@ -34,6 +37,12 @@ It would be convenient to have a [mbed](https://developer.mbed.org) style develo
 ## Background
 
 This project targets the Beaglebone Black Rev C running the default Debian Linux (3.8+ kernel) image. We will be dealing primarily with the on-chip Programmable Realtime Unit Subsystem (PRUSS) and the device tree subsystem on Linux.
+
+### Programmable Realtime Unit Subsystem
+
+The PRUSS functions as an on-chip peripheral that is capable of general purpose computation as well as fast digital I/O. Within the PRUSS, there are two 32-bit PRU cores. Each is clocked at 200 Mhz (5 ns per instruction) and has its own dedicated instruction and data RAM (8Kb each) in addition to 12 Kb of shared RAM between each core. The PRUs also hace full access to the main memory as well as other on-chip peripherals, but accessing them from the PRU requires sending data across the higher latency L3 network-on-chip interconnect. However, certain pins classified as fast digital I/O pins can be assigned to the PRUs with single cycle access latency.
+
+![alt text](https://github.com/yifanz/CSM213A/raw/master/images/pru.png "PRUSS")
 
 ### Device Tree
 
