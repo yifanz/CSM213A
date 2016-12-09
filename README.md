@@ -40,9 +40,11 @@ This project targets the Beaglebone Black Rev C running the default Debian Linux
 
 ### Programmable Realtime Unit Subsystem
 
-The PRUSS functions as an on-chip peripheral that is capable of general purpose computation as well as fast digital I/O. Within the PRUSS, there are two 32-bit PRU cores. Each is clocked at 200 Mhz (5 ns per instruction) and has its own dedicated instruction and data RAM (8Kb each) in addition to 12 Kb of shared RAM between each core. The PRUs also hace full access to the main memory as well as other on-chip peripherals, but accessing them from the PRU requires sending data across the higher latency L3 network-on-chip interconnect. However, certain pins classified as fast digital I/O pins can be assigned to the PRUs with single cycle access latency.
+The PRUSS functions as an on-chip peripheral that is capable of general purpose computation as well as fast digital I/O. Within the PRUSS, there are two 32-bit PRU cores. Each is clocked at 200 Mhz (5 ns per instruction) and has its own dedicated instruction and data RAM (8Kb each) in addition to 12 Kb of shared RAM between each core. The PRUs also hace full access to the main memory as well as other on-chip peripherals, but accessing them from the PRU requires sending data across the higher latency L3 network-on-chip interconnect. However, certain pins classified as fast digital I/O pins with single cycle access latency can be assigned directly to the PRUs through a pinmux configuration.
 
-![alt text](https://github.com/yifanz/CSM213A/raw/master/images/pru.png "PRUSS")
+<p align="center">
+  <img src="https://github.com/yifanz/CSM213A/raw/master/images/pru.png" alt="PRUSS" width="500">
+</p>
 
 ### Device Tree
 
@@ -62,3 +64,7 @@ Linux parses the device tree and provides a querying API to device drivers.
 Initially, the device tree can be written by users in a `dts` text format which can then be serialized into a `dtb` binary using the `dtc` userspace utility. The `dtb` can be copied into the boot partition and the bootloader can be configured to pass the `dtb` to the kernel in a parameter. This way, a kernel compiled for a particular architecture can be supported on different hardware platforms of the same architecture simply by specifying a different `dtb`.
 
 ## Design
+
+<p align="center">
+  <img src="https://github.com/yifanz/CSM213A/raw/master/images/cyclops_diag.png" alt="PRUSS" width="600">
+</p>
