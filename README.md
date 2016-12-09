@@ -65,6 +65,18 @@ Initially, the device tree can be written by users in a `dts` text format which 
 
 ## Design
 
+The system can roughly be divided into the following components: a kernel module for pinmux configuration, a PRU loader for handling PRU communication, a high level programming language similar to javascript, a compiler for the PL and a browser based IDE that ties everything together. As shown in the diagram below, the components form a vertical slice of the system starting from the high level user-facing application all the way down to interacting with the hardware in kernel space.
+
 <p align="center">
   <img src="https://github.com/yifanz/CSM213A/raw/master/images/cyclops_diag.png" alt="PRUSS" width="600">
 </p>
+
+### Kernel Module
+
+### PRU Loader
+
+### Programming Language
+
+### Compiler
+
+### IDE
