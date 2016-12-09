@@ -10,6 +10,7 @@ int main(int argc, const char *argv[]) {
 
 	if (argc != 3) {
 		printf("Usage: %s <pru_code.bin> <pru num>\n", argv[0]);
+		fflush(stdout);
 		return 1;
 	}
 
@@ -19,6 +20,7 @@ int main(int argc, const char *argv[]) {
 
 	if (prussdrv_open(PRU_EVTOUT_0) == -1) {
 		printf("prussdrv_open() failed\n");
+		fflush(stdout);
 		return 1;
 	}
 
@@ -36,11 +38,13 @@ int main(int argc, const char *argv[]) {
 	void* dataram;
 	if (prussdrv_map_prumem(which_pru ? PRUSS0_PRU1_DATARAM : PRUSS0_PRU0_DATARAM, &dataram)) {
 		printf("pru mem map failed\n");
+		fflush(stdout);
 		return 1;
 	}
 	memset(dataram, 0, 0x2000);
 
 	printf("Executing program and waiting for termination\n");
+	fflush(stdout);
 	prussdrv_exec_program(which_pru, argv[1]);
 
 	// Wait for interrupt from PRU
@@ -56,16 +60,20 @@ int main(int argc, const char *argv[]) {
 				uint32_t arg = *(++p);
 				if (i == num_args - 1) {
 					printf(" %u [0x%lx]", arg, arg);
+					fflush(stdout);
 				} else {
 					printf(" %u [0x%lx],", arg, arg);
+					fflush(stdout);
 				}
 			}
 			printf("\n");
+			fflush(stdout);
 			p = (uint32_t*) dataram;
 			*p = 0;
 		} else if (*p == 2) {
 			// terminate
 			printf("Terminate\n");
+			fflush(stdout);
 			break;
 		}
 	}

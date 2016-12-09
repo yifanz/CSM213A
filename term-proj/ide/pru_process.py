@@ -43,23 +43,19 @@ def pru_process(pru_num, buf_out, shared):
 			
 			if shared.get('req' + str(pru_num)) == 'assemble':
 				process = subprocess.Popen([cur_path + "/../scripts/compile-pru.sh", str(pru_num)], \
-							stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+							stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 			elif shared.get('req' + str(pru_num)) == 'run':
 				process = subprocess.Popen([cur_path + "/../scripts/compile-pru.sh", str(pru_num), 'run'], \
-							stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+							stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 			while True:
 				if check_stop(pru_num):
 					break
 				output = process.stdout.readline()
-				err_output = process.stderr.readline()
-				if output == '' and err_output == '' and process.poll() is not None:
+				if output == '' and process.poll() is not None:
 					break
 				else:
 					if output:
 						print str(pru_num) + '@ ' + output.rstrip()
 						buf_out.put_nowait(output.rstrip())
-					if err_output:
-						print str(pru_num) + '! ' + err_output
-						buf_out.put_nowait(err_output.rstrip())
 			stop_process(process)

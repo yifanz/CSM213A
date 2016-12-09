@@ -31,6 +31,7 @@ $(document).ready(function() {
 			console.log("run");
 			var terminal = $("#console");
 			terminal.append("Running...\n");
+			$('#tail').click();
 		});
 	});
 
