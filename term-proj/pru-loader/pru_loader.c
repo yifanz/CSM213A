@@ -54,7 +54,11 @@ int main(int argc, const char *argv[]) {
 			uint32_t num_args = *(++p);
 			for (int i = 0; i < num_args; i++) {
 				uint32_t arg = *(++p);
-				printf(" %d", arg);
+				if (i == num_args - 1) {
+					printf(" %u [0x%lx]", arg, arg);
+				} else {
+					printf(" %u [0x%lx],", arg, arg);
+				}
 			}
 			printf("\n");
 			p = (uint32_t*) dataram;

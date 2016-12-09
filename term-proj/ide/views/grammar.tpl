@@ -103,10 +103,10 @@ Assignment
 			}
 		} else if (lhs.type === 'tick') {
 			var treg = assign_tmp_reg();
-			asm_out("ldi " + treg + ", 0x22000");
+			asm_out("mov " + treg + ", 0x22000");
 			if (rhs.type === 'int') {
 				var treg2 = assign_tmp_reg();
-				asm_out("ldi " + treg2 + ", " + rhs.value);
+				asm_out("mov " + treg2 + ", " + rhs.value);
 				asm_out("sbbo " + treg2 + ", " + treg + ", 0xC, 4");
 				tmp_reg--;
 			} else {
@@ -117,7 +117,7 @@ Assignment
 			if (rhs.type !== 'int') {
 				asm_out("mov " + lhs.value + ", " + rhs.value);
 			} else {
-				asm_out("ldi " + lhs.value + ", " + rhs.value);
+				asm_out("mov " + lhs.value + ", " + rhs.value);
 			}
 		}
 		reset_tmp_regs();
@@ -130,7 +130,7 @@ Print
 		for (var i = tail.length - 1; i >= 0; i--) {
 			var arg = tail[i][3];
 			if (arg.type === 'int') {
-				asm_out("ldi " + treg + ", " + arg.value);
+				asm_out("mov " + treg + ", " + arg.value);
 				asm_out("sbbo " + treg + ", r1, 0, 4");
 			} else {
 				asm_out("sbbo " + arg.value + ", r1, 0, 4");
@@ -140,7 +140,7 @@ Print
 
 		arg = head;
 		if (arg.type === 'int') {
-			asm_out("ldi " + treg + ", " + arg.value);
+			asm_out("mov " + treg + ", " + arg.value);
 			asm_out("sbbo " + treg + ", r1, 0, 4");
 		} else {
 			asm_out("sbbo " + arg.value + ", r1, 0, 4");
@@ -148,21 +148,47 @@ Print
 		asm_out("add r1, r1, 4");
 
 		var argc = 1 + tail.length;
-		asm_out("ldi " + treg + ", " + argc);
+		asm_out("mov " + treg + ", " + argc);
 		asm_out("sbbo " + treg + ", r1, 0, 4");
 		asm_out("add r1, r1, 4");
 		asm_out("call PRINT");
 	}
 
 Loop
-	= "while" _ "(" _ cond:CondExpression _ ")" _ "{" Statement* "}" {
-		asm_out("jmp " + cond.value);
-		asm_out("" + cond.value + "_END:");
+	= while_keyword:While _ "(" _ cond:CondExpression _ ")" _ "{" _ Statement* _ "}" {
+		asm_out("jmp " + while_keyword.value);
+		asm_out("" + while_keyword.value + "_END:");
+	}
+
+While
+	= "while" {
+		var label = "COND_" + loop_cnt;
+		var label_end = label + "_END";
+
+		asm_out(label + ":");
+
+		return {
+			type: 'label',
+			value: label
+		};
 	}
 
 If
-	= "if" _ "(" _ cond:CondExpression _ ")" _ "{" Statement* "}" {
-		asm_out("" + cond.value + "_END:");
+	= ifkey:If_key _ "(" _ cond:CondExpression _ ")" _ "{" _ Statement* _ "}" {
+		asm_out("" + ifkey.value + "_END:");
+	}
+
+If_key
+	= "if" {
+		var label = "COND_" + loop_cnt;
+		var label_end = label + "_END";
+
+		asm_out(label + ":");
+
+		return {
+			type: 'label',
+			value: label
+		};
 	}
 
 CondExpression
@@ -172,8 +198,6 @@ CondExpression
 		
 		var label = "COND_" + loop_cnt++;
 		var label_end = label + "_END";
-
-		asm_out(label + ":");
 
 		var pin_info = get_pin_info(pin.value);
 		var preg = "r" + pin_info.reg;
@@ -199,15 +223,24 @@ CondExpression
 		var label = "COND_" + loop_cnt++;
 		var label_end = label + "_END";
 
-		asm_out(label + ":");
-
+		var tmpcnt = 0;
 		if (lhs.type === 'int') {
-			var treg = assign_tmp_reg_imm();
-			asm_out("ldi " + treg + ", " + lhs.value);
+			var treg = assign_tmp_reg();
+			asm_out("mov " + treg + ", " + lhs.value);
 			lhs = { type: 'reg', value: treg };
+			tmpcnt++;
 		}
 
-		asm_out(opcode + label_end + ", " + lhs.value + ", " + rhs.value);
+		if (rhs.type === 'int') {
+			treg = assign_tmp_reg();
+			asm_out("mov " + treg + ", " + rhs.value);
+			rhs = { type: 'reg', value: treg };
+			tmpcnt++;
+		}
+
+		tmp_reg -= tmpcnt;
+
+		asm_out(opcode + label_end + ", " + rhs.value + ", " + lhs.value);
 
 		return {
 			type: 'label',
@@ -238,10 +271,10 @@ Expression
 				var result;
 				if (opcode === "and ") result = lhs.value & rhs.value;
 				else result = lhs.value | rhs.value;
-				asm_out("ldi " + treg + ", " + result);
+				asm_out("mov " + treg + ", " + result);
 			} else if (lhs.type === 'int' && rhs.type !== 'int') {
 				var head_tmp = assign_tmp_reg_imm();
-				asm_out("ldi " + head_tmp + ", " + lhs.value);
+				asm_out("mov " + head_tmp + ", " + lhs.value);
 				asm_out(opcode + treg + ", " + head_tmp + ", " + rhs.value);
 			} else {
 				asm_out(opcode + treg + ", " + lhs.value + ", " + rhs.value);
@@ -278,10 +311,10 @@ Term
 				var result;
 				if (opcode === "add ") result = lhs.value + rhs.value;
 				else result = lhs.value - rhs.value;
-				asm_out("ldi " + treg + ", " + result);
+				asm_out("mov " + treg + ", " + result);
 			} else if (lhs.type === 'int' && rhs.type !== 'int') {
 				var head_tmp = assign_tmp_reg_imm();
-				asm_out("ldi " + head_tmp + ", " + lhs.value);
+				asm_out("mov " + head_tmp + ", " + lhs.value);
 				asm_out(opcode + treg + ", " + head_tmp + ", " + rhs.value);
 			} else {
 				asm_out(opcode + treg + ", " + lhs.value + ", " + rhs.value);
@@ -303,7 +336,7 @@ Factor
 	/ Integer
 	/ Tick {
 		var treg = assign_tmp_reg();
-		asm_out("ldi " + treg + ", 0x22000");
+		asm_out("mov " + treg + ", 0x22000");
 		asm_out("lbbo " + treg + ", " + treg + ", 0xC, 4"); 
 		return {
 			type: 'reg',
