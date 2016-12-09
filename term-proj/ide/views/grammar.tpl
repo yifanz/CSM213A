@@ -1,7 +1,7 @@
 <pre id="grammar" style="display: none;">
 {
 	var reg_var_map = {};
-	var base_tmp_reg = 18;
+	var base_tmp_reg = 25;
 	var tmp_reg = base_tmp_reg;
 	var base_free_reg = 5;
 	var free_reg = base_free_reg;
