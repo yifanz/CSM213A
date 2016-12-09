@@ -82,7 +82,11 @@ Root
 Statement
 	= _ Assignment _ ";" _
 	/ _ Loop _
-	/ _ If _
+	/ _ ifpart:If elsepart:(_ "{" _ Statement* _ "}")? _ {
+		if (elsepart) {
+			asm_out("" + ifpart.value + "_ELSE_END:");
+		}
+	}
 	/ _ Print _ ";" _
 
 Assignment
@@ -174,8 +178,18 @@ While
 	}
 
 If
-	= ifkey:If_key _ "(" _ cond:CondExpression _ ")" _ "{" _ Statement* _ "}" {
-		asm_out("" + ifkey.value + "_END:");
+	= ifkey:If_key _ "(" _ cond:CondExpression _ ")" _ "{" _ Statement* _ "}" _ elsekey:("else"?) {
+		if (elsekey === "else") {
+			asm_out("jmp " + ifkey.value + "_ELSE_END");
+			asm_out("" + ifkey.value + "_END:");
+		} else {
+			asm_out("" + ifkey.value + "_END:");
+		}
+
+		return {
+			type: 'label',
+			value: ifkey.value
+		};
 	}
 
 If_key
@@ -375,7 +389,7 @@ Tick
 	}
 
 Identifier
-	= ([a-zA-Z][a-zA-Z0-9]*) {
+	= ([_a-zA-Z][_a-zA-Z0-9]*) {
 		return {
 			type: "reg",
 			value: assign_reg(text())
