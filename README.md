@@ -15,8 +15,7 @@ yifanz@ucla.edu
 3. [Design](#design)
   * [Kernel Modules](#kernel-modules)
   * [PRU Loader](#pru-loader)
-  * [Programming Language](#programming-language)
-  * [Compiler](#compiler)
+  * [Programming Language and Compiler](#programming-language-and-compiler)
   * [IDE](#ide)
 
 ## Project Proposal 
@@ -102,9 +101,14 @@ The PRU loader is a simple Linux userspace application for loading binaries into
 * `update-time.sh` Run this on the BBB to update your local time via ntp. The BBB does not maintain time between power cycles.
 * `activate-pruss.sh` The PRUSS is disabled by default on the BBB. Run this to turn it on. Run `./activate-pruss.sh unload` to turn it back off.
 * `list-capemgr-slots.sh` Convenience script to print out what bone cape manager slots are active. While we use the pin-pirate LKM to map pins, turning the PRUSS on with the `activate-pruss.sh` script will load a minimal device tree configuration that turns on the PRUSS (see [PRU-ACTIVATE-00A0.dts](https://github.com/yifanz/CSM213A/blob/master/term-proj/device-tree/PRU-ACTIVATE-00A0.dts)).
+* `start-ide.sh` Starts the webserver that hosts the IDE. Browse to `http://<IP of BBB>:8081`. You can configure the IP address and port in [start.py](https://github.com/yifanz/CSM213A/blob/master/term-proj/ide/start.py#L59).
 
-### Programming Language
+### Programming Language and Compiler
 
-### Compiler
+Cyclops provides a high level programming language that compiles directly into PRU assembly code. The syntax of the language is a limited subset of javascript and is intended to have a minimal learning curve and serve as a way to quickly experiment with the PRU. To keep within the timeframe of this project, the language features were kept barebone. The language currently supports arithmetic expressions, conditional expressions, assignments, while loops, if/else conditionals and a print statement.
+
+Variables do not need to be explicitly declared in Cyclops. Upon first assignment, they become implicitly declared and are assigned a global scope. The number of variables in a program is limited to the size of the register file. While this seems limiting, it ensures that there will never to unexpected latencies from register spilling and helps keep the compiler implementation simple. Furthermore, PRUs generously offer 32 registers for general use. Cyclops reserves `r0` for use as the zero register and `r1` for for use as a stack pointer for passing arguments to the print function. In the case of arithmetic expressions, intermediate results are assigned to temporary registers that are scoped to the current statement. The range of registers available for general use and temporary use can be configured [here](https://github.com/yifanz/CSM213A/blob/master/term-proj/ide/views/grammar.tpl#L4). A future improvement would be adding liveness analysis to optimize the register allocation.
+
+Symbols referring to external fast GPIO pins follow this syntax: `P<header>_<pin#>`. The compiler infers whether or not a pin is for input or output based on the first reference. A statement assigning a 1 or 0 to the pin implies that the pin should be configured for output. If the pin is used in a conditional expression within an `if` or `while` statement, then that pin should be set as a pulldown input pin. A compiler error is generated if a pin is being used for both input and output in the same program.
 
 ### IDE
