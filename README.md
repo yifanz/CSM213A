@@ -18,6 +18,7 @@ yifanz@ucla.edu
   * [Programming Language and Compiler](#programming-language-and-compiler)
   * [IDE](#ide)
 4. [References](#references)
+5. [Open Source](#open-source-attributions)
 
 ## Project Proposal 
 ### Cyclops: PL + Compiler + IDE for making PRUs easier to use
@@ -125,3 +126,12 @@ The IDE is implemented as a browser based application hosted from the Beaglebone
 5. http://processors.wiki.ti.com/index.php/PRU_Assembly_Instructions
 6. AM335x and AMIC110 Technical Reference Manual. Texas Instruments.
 7. Corbet, Jonathan, Alessandro Rubini, and Greg Kroah-Hartman. Linux device drivers. " O'Reilly Media, Inc.", 2005.
+
+## Open Source Attributions
+
+This project uses open source code. The source code and
+corresponding license information is listed below.
+
+1. The IDE relies on the [Ace Editor](https://ace.c9.io) for the code editing panels. The syntax highlighting for the Cyclops language and PRU assembler is based on the javascript and x86 highlighter from ace. [[BSD License]](https://github.com/ajaxorg/ace/blob/master/LICENSE) [[source code]](https://github.com/ajaxorg/ace)
+2. The Cyclops compiler uses the [PEG.js Parser](https://pegjs.org) written by David Majda. [[MIT License]](https://github.com/pegjs/pegjs/blob/master/LICENSE) [[source code]](https://github.com/pegjs/pegjs)
+3. The [Bottle.py](https://bottlepy.org) webserver is used to handle serving the browser based application and HTTP handling. [[MIT License]](https://raw.githubusercontent.com/bottlepy/bottle/master/LICENSE) [[source code]](https://github.com/bottlepy/bottle)
