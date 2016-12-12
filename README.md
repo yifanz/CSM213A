@@ -17,9 +17,10 @@ yifanz@ucla.edu
   * [PRU Loader](#pru-loader)
   * [Programming Language and Compiler](#programming-language-and-compiler)
   * [IDE](#ide)
+4. [References](#references)
 
 ## Project Proposal 
-### Cyclops - PL + Compiler + IDE for making PRUs easier to use
+### Cyclops: PL + Compiler + IDE for making PRUs easier to use
 
 ![alt text](https://github.com/yifanz/CSM213A/raw/master/images/ide_screenshot.png "ide")
 
@@ -90,7 +91,7 @@ The device tree system is limited in that you must reboot the system if you wish
 
 In any case, the complex nature of device tree reloading makes both the bone cape manager and device tree overlay susceptible to kernel panics particularily upon repeated and frequent configuration changes. Rather, noth systems appear to be designed for one time configuration changes typically right after successful bootup. This way, one can maintain a stable device tree configuration for booting and another for experimentation. The intention seems to help you avoid accidentally making your system unbootable.
 
-In the case of Cyclops, we need to make configuration changes everytime a new program that needs a different set of pins is executed. As explained previously, device tree overlays are not suitable for this use case. This motivates the need for the pin-pirate Linux kernel module (LKM). Pin-pirate is a simple LKM that writes directly in the pinmux controller's hardware registers. It is exposed to userspace as a simple character device through the device node located at `/dev/pinpirate`. If `udev` rules are setup properly on the system, then you can access this node without root permissions. To change a pin configuration one can simply run `echo 0x34 0x06 > /dev/pinpirate` with the register offset and value, respectively.
+In the case of Cyclops, we need to make configuration changes everytime a new program that needs a different set of pins is executed. As explained previously, device tree overlays are not suitable for this use case. This motivates the need for the pin-pirate Linux kernel module (LKM). Pin-pirate is a simple LKM that writes directly in the pinmux controller's hardware registers. It is exposed to userspace as a simple character device through the device node located at `/dev/pinpirate`. If `udev` rules are setup properly on the system, then you can access this node without root permissions. To change a pin configuration one can simply run `echo 0x34 0x06 > /dev/pinpirate` with the register offset and value, respectively. Lastly, to compile the module from source, you will need ensure that you have installed the Linux kernel headers for the version of the kernel you are using (see [example](https://github.com/yifanz/CSM213A/blob/master/term-proj/scripts/install-BBB-kernel-headers.sh)).
 
 ### PRU Loader
 
@@ -112,3 +113,15 @@ Variables do not need to be explicitly declared in Cyclops. Upon first assignmen
 Symbols referring to external fast GPIO pins follow this syntax: `P<header>_<pin#>`. The compiler infers whether or not a pin is for input or output based on the first reference. A statement assigning a 1 or 0 to the pin implies that the pin should be configured for output. If the pin is used in a conditional expression within an `if` or `while` statement, then that pin should be set as a pulldown input pin. A compiler error is generated if a pin is being used for both input and output in the same program.
 
 ### IDE
+
+The IDE is implemented as a browser based application hosted from the Beaglebone Black. The user has the option to either use the high level Cyclops language or code directly in PRU assembly. The 'compile' button converts the Cyclops program into PRU assembly. The 'run' button sends the PRU assembly code to the BBB to be assembled by `pasm` (PRU assembler provided by Texas Instruments) and then invoked by the [PRU loader](#pru-loader). If the user is dissatisfied with the compiler's ouput, they can simply edit the generated assembler by hand before clicking on 'run'. In order to dynamically configure pin mappings, pinmux register offsets and values are parsed from comments at the top of the assembly code and send to the [pin-pirate driver](#pin-pirate-lkm) before the PRU loader is invoked (see [compile-pru.sh](https://github.com/yifanz/CSM213A/blob/master/term-proj/scripts/compile-pru.sh#L22)). Finally, any data from standard output or error are piped back into the IDE's terminal pane.
+
+## References
+
+1. https://www.devicetree.org
+2. ELC 2015 - Enhancing Real-Time Capabilities with the PRU - Rob Birkett, Texas Instruments. https://www.youtube.com/watch?v=plCYsbmMbmY
+3. Molloy, Derek. Exploring BeagleBone: Tools and Techniques for Building with Embedded Linux. John Wiley & Sons, 2014.
+4. https://github.com/derekmolloy
+5. http://processors.wiki.ti.com/index.php/PRU_Assembly_Instructions
+6. AM335x and AMIC110 Technical Reference Manual. Texas Instruments.
+7. Corbet, Jonathan, Alessandro Rubini, and Greg Kroah-Hartman. Linux device drivers. " O'Reilly Media, Inc.", 2005.
