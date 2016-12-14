@@ -8,6 +8,13 @@ DTS_NAME="PRU-ACTIVATE"
 FIRMWARE_DIR="/lib/firmware/"
 CAPEMGR_SLOTS="/sys/devices/bone_capemgr.9/slots"
 
+if [ ! -e $CAPEMGR_SLOTS ]; then
+	CAPEMGR_SLOTS="/sys/devices/platform/bone_capemgr/slots"
+	if [ ! -e $CAPEMGR_SLOTS ]; then
+		echo "Bone Cape Manager not found"
+	fi
+fi
+
 is_active()
 {
 	for f in /sys/class/uio/*

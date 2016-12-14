@@ -6,7 +6,7 @@
 	compatible = "ti,beaglebone", "ti,beaglebone-green", "ti,beaglebone-black";
 	part-number = "PRU-ACTIVATE";
 	version = "00A0";
-	fragment@1 {
+	fragment@0 {
 		target = <&pruss>;
 		__overlay__ {
 			status = "okay";
