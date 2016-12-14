@@ -1,14 +1,14 @@
+#!/bin/bash
+
 #
 # Run this on the BBB to install kernel headers for kernel module development
 #
 
-# update the package manager
-sudo apt-get update
+KERNEL_HEADERS_MAKEFILE="/lib/modules/$(uname -r)/build/Makefile"
 
-# uname -r lists the exact kernel build version
-sudo apt-cache search linux-headers-$(uname -r)
-
-# I happen to be using 3.8.13-bone79, you should replace with your version
-sudo apt-get install linux-headers-3.8.13-bone79
-
-# If successful you will find the headers in /usr/src/linux-headers-3.8.13-bone79
+if [ ! -e $KERNEL_HEADERS_MAKEFILE ]; then
+	sudo apt-get update
+	sudo apt-get install linux-headers-$(uname -r)
+else
+	echo Kernel headers already installed $KERNEL_HEADERS_MAKEFILE
+fi

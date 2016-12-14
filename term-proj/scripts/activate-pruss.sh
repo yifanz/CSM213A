@@ -33,10 +33,11 @@ else
 	
 		if [ ! -f "${FIRMWARE_DIR}${DTS_NAME}-00A0.dtbo" ]; then
 			sudo cp ../device-tree/${DTS_NAME}-00A0.dts $FIRMWARE_DIR
+			sudo dtc -O dtb -I dts -o ${FIRMWARE_DIR}${DTS_NAME}-00A0.dtbo -b 0 -@ ${FIRMWARE_DIR}${DTS_NAME}-00A0.dts
 		fi
 		
 		if ! cat $CAPEMGR_SLOTS | grep --quiet $DTS_NAME ; then
-			SLOT_LOAD="sudo sh -c 'echo PRU-ACTIVATE > $CAPEMGR_SLOTS'"
+			SLOT_LOAD="sudo sh -c 'echo $DTS_NAME > $CAPEMGR_SLOTS'"
 			eval $SLOT_LOAD
 			sleep 1
 		fi
