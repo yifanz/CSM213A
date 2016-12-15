@@ -121,6 +121,7 @@ Statement
 		}
 	}
 	/ _ Print _ ";" _
+	/ _ Pulse _ ";" _
 
 Assignment
 	= _ lhs:(Pin / Tick / Identifier) _ "=" _ rhs:Expression {
@@ -190,6 +191,39 @@ Print
 		asm_out("sbbo " + treg + ", r1, 0, 4");
 		asm_out("add r1, r1, 4");
 		asm_out("call PRINT");
+	}
+
+Pulse
+	= "pulse" _ "(" _ pin:Pin _ "," _ duration:Integer _ unit:("sec"/"ms"/"us")? _ ")" {
+		var pin_info = get_pin_info(pin.value);
+		if (!pin_info.output) throw { message: pin.value + " cannot be used for output" };
+		var preg = "r" + pin_info.output.reg;
+		var pbit = pin_info.output.bit;
+
+		var num_cycles = duration.value;
+		if (unit === "sec") {
+			num_cycles *= 200000000;
+		} else if (unit === "ms") {
+			num_cycles *= 200000;
+		} else if (unit === "us") {
+			num_cycles *= 200;
+		}
+
+		asm_out("set " + preg + ", " + preg + ", " + pbit);
+		var loop_label = "COND_" + loop_cnt++;
+		asm_out(loop_label + ":");
+		var treg = assign_tmp_reg();
+		var treg2 = assign_tmp_reg();
+		asm_out("mov " + treg + ", 0x22000");
+		asm_out("lbbo " + treg + ", " + treg + ", 0xC, 4");
+		asm_out("mov " + treg2 + ", " + num_cycles);
+		asm_out("qbge " + loop_label + "_END, " + treg2 + ", " + treg);
+		asm_out("jmp " + loop_label);
+		asm_out(loop_label + "_END:");
+		asm_out("clr " + preg + ", " + preg + ", " + pbit);
+
+		tmp_reg -= 2;
+		assign_pin(pin.value, false);
 	}
 
 Loop
