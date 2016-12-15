@@ -7,10 +7,40 @@
 	var free_reg = base_free_reg;
 	var loop_cnt = 0;
 	
+	// 14 pins for each PRU
 	var pin_map = {
-		"P8_11": { reg: 30, bit: 15, offset: 0x34, mode: 0x06 },
-		"P8_16": { reg: 31, bit: 14, offset: 0x38, mode: 0x06 },
+		"P8_11": { /* no input */                           output: { reg: 30, bit: 15, mode: 0x06 }, offset: 0x034 }, // PRU0
+		"P8_12": { /* no input */                           output: { reg: 30, bit: 14, mode: 0x06 }, offset: 0x030 }, // PRU0
+		"P8_15": { input: { reg: 31, bit: 15, mode: 0x06 }, /* no output */                           offset: 0x03c }, // PRU0
+		"P8_16": { input: { reg: 31, bit: 14, mode: 0x06 }, /* no output */                           offset: 0x038 }, // PRU0
+		"P9_24": { input: { reg: 31, bit: 16, mode: 0x06 }, /* no output */                           offset: 0x184 }, // PRU0 
+		"P9_25": { input: { reg: 31, bit:  7, mode: 0x06 }, output: { reg: 30, bit:  7, mode: 0x05 }, offset: 0x1ac }, // PRU0 
+		"P9_27": { input: { reg: 31, bit:  5, mode: 0x06 }, output: { reg: 30, bit:  5, mode: 0x05 }, offset: 0x1a4 }, // PRU0 
+		"P9_28": { input: { reg: 31, bit:  3, mode: 0x06 }, output: { reg: 30, bit:  3, mode: 0x05 }, offset: 0x19c }, // PRU0 
+		"P9_29": { input: { reg: 31, bit:  1, mode: 0x06 }, output: { reg: 30, bit:  1, mode: 0x05 }, offset: 0x194 }, // PRU0 
+		"P9_30": { input: { reg: 31, bit:  2, mode: 0x06 }, output: { reg: 30, bit:  2, mode: 0x05 }, offset: 0x198 }, // PRU0 
+		"P9_31": { input: { reg: 31, bit:  0, mode: 0x06 }, output: { reg: 30, bit:  0, mode: 0x05 }, offset: 0x190 }, // PRU0 
+		// Not sure how these pins are suppose to be configured
+		// "P9_41": { }, // PRU 0
+		// "P9_42": { }, // PRU 0
+
+		"P8_20": { input: { reg: 31, bit: 13, mode: 0x06 }, output: { reg: 30, bit: 13, mode: 0x05 }, offset: 0x084 }, // PRU1
+		"P8_21": { input: { reg: 31, bit: 12, mode: 0x06 }, output: { reg: 30, bit: 12, mode: 0x05 }, offset: 0x080 }, // PRU1
+		"P8_27": { input: { reg: 31, bit:  8, mode: 0x06 }, output: { reg: 30, bit:  8, mode: 0x05 }, offset: 0x0e0 }, // PRU1
+		"P8_28": { input: { reg: 31, bit: 10, mode: 0x06 }, output: { reg: 30, bit: 10, mode: 0x05 }, offset: 0x0e8 }, // PRU1
+		"P8_29": { input: { reg: 31, bit:  9, mode: 0x06 }, output: { reg: 30, bit:  9, mode: 0x05 }, offset: 0x0e4 }, // PRU1
+		"P8_30": { input: { reg: 31, bit: 11, mode: 0x06 }, output: { reg: 30, bit: 11, mode: 0x05 }, offset: 0x0ec }, // PRU1
+		"P8_39": { input: { reg: 31, bit:  6, mode: 0x06 }, output: { reg: 30, bit:  6, mode: 0x05 }, offset: 0xb80 }, // PRU1
+		"P8_40": { input: { reg: 31, bit:  7, mode: 0x06 }, output: { reg: 30, bit:  7, mode: 0x05 }, offset: 0xbc0 }, // PRU1
+		"P8_41": { input: { reg: 31, bit:  4, mode: 0x06 }, output: { reg: 30, bit:  4, mode: 0x05 }, offset: 0xb00 }, // PRU1
+		"P8_42": { input: { reg: 31, bit:  5, mode: 0x06 }, output: { reg: 30, bit:  5, mode: 0x05 }, offset: 0xb40 }, // PRU1
+		"P8_43": { input: { reg: 31, bit:  2, mode: 0x06 }, output: { reg: 30, bit:  2, mode: 0x05 }, offset: 0xa80 }, // PRU1
+		"P8_44": { input: { reg: 31, bit:  3, mode: 0x06 }, output: { reg: 30, bit:  3, mode: 0x05 }, offset: 0xac0 }, // PRU1
+		"P8_45": { input: { reg: 31, bit:  0, mode: 0x06 }, output: { reg: 30, bit:  0, mode: 0x05 }, offset: 0xa00 }, // PRU1
+		"P8_46": { input: { reg: 31, bit:  1, mode: 0x06 }, output: { reg: 30, bit:  1, mode: 0x05 }, offset: 0xa40 }, // PRU1
+		"P9_26": { input: { reg: 31, bit: 16, mode: 0x06 }, /* no output */                           offset: 0x180 }, // PRU1
 	};
+
 	var pin_enable_pull_bit = (1 << 3);
 	var pin_pullup_bit = (1 << 4);
 	var pin_input_bit = (1 << 5);
@@ -67,9 +97,11 @@
 		var pin_info = pin_map[pin];
 		if (!pin_info) throw { message: "" + pin + " does not exist" };
 
-		var conf = "0x" + Number(pin_info.offset).toString(16) + " 0x" + Number(pin_info.mode).toString(16);
+		var conf = "0x" + Number(pin_info.offset).toString(16);
 		if (input) {
-			conf = "0x" + Number(pin_info.offset).toString(16) + " 0x" + Number(pin_info.mode | pin_enable_pull_bit | pin_input_bit).toString(16);
+			conf += " 0x" + Number(pin_info.input.mode | pin_enable_pull_bit | pin_input_bit).toString(16);
+		} else {
+			conf += " 0x" + Number(pin_info.output.mode).toString(16);
 		}
 
 		pin_settings[pin] = { input: input, conf: conf };	
@@ -95,8 +127,9 @@ Assignment
 		if (lhs.type === 'pin') {
 			if (rhs.type === 'int') {
 				var pin_info = get_pin_info(lhs.value);
-				var preg = "r" + pin_info.reg;
-				var pbit = pin_info.bit;
+				if (!pin_info.output) throw { message: lhs.value + " cannot be used for output" };
+				var preg = "r" + pin_info.output.reg;
+				var pbit = pin_info.output.bit;
 				if (rhs.value === 0) {
 					asm_out("clr " + preg + ", " + preg + ", " + pbit);
 				} else {
@@ -215,8 +248,9 @@ CondExpression
 		var label_end = label + "_END";
 
 		var pin_info = get_pin_info(pin.value);
-		var preg = "r" + pin_info.reg;
-		var pbit = pin_info.bit;
+		if (!pin_info.input) throw { message: pin.value + " cannot be used for input" };
+		var preg = "r" + pin_info.input.reg;
+		var pbit = pin_info.input.bit;
 
 		asm_out(opcode + label_end + ", " + preg + ", " + pbit);
 
